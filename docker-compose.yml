@@ -1,0 +1,131 @@
+version: '3.9'
+
+services:
+  # Databases
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: pricing
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  # Kafka Broker and Zookeeper
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_BROKER_ID: 1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+
+  # Infrastructure Services
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+
+  discovery-server:
+    build: ./discovery-server
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - config-server
+      - discovery-server
+
+  # Business Microservices
+  product-catalog-service:
+    build: ./product-catalog-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - config-server
+      - discovery-server
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - redis
+      - config-server
+      - discovery-server
+
+  pricing-service:
+    build: ./pricing-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongo
+      - config-server
+      - discovery-server
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - postgres
+      - kafka
+      - config-server
+      - discovery-server
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - postgres
+      - config-server
+      - discovery-server
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      - kafka
+      - config-server
+      - discovery-server
+
+volumes:
+  postgres-data:
+  mongo-data:
+  redis-data:
