@@ -32,7 +32,7 @@ services:
     volumes:
       - redis-data:/data
 
-  # Kafka Broker and Zookeeper
+  # Kafka and Zookeeper
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
@@ -50,28 +50,28 @@ services:
     depends_on:
       - zookeeper
 
-  # Infrastructure Services
+  # Infrastructure services
   config-server:
-    build: ./config-server
+    build: ../config-server
     ports:
       - "8888:8888"
 
   discovery-server:
-    build: ./discovery-server
+    build: ../discovery-server
     ports:
       - "8761:8761"
 
   api-gateway:
-    build: ./api-gateway
+    build: ../api-gateway
     ports:
       - "8080:8080"
     depends_on:
       - config-server
       - discovery-server
 
-  # Business Microservices
+  # Microservices with their dependencies
   product-catalog-service:
-    build: ./product-catalog-service
+    build: ../product-catalog-service
     ports:
       - "8081:8081"
     depends_on:
@@ -80,7 +80,7 @@ services:
       - discovery-server
 
   inventory-service:
-    build: ./inventory-service
+    build: ../inventory-service
     ports:
       - "8082:8082"
     depends_on:
@@ -89,7 +89,7 @@ services:
       - discovery-server
 
   pricing-service:
-    build: ./pricing-service
+    build: ../pricing-service
     ports:
       - "8083:8083"
     depends_on:
@@ -98,7 +98,7 @@ services:
       - discovery-server
 
   order-service:
-    build: ./order-service
+    build: ../order-service
     ports:
       - "8084:8084"
     depends_on:
@@ -108,7 +108,7 @@ services:
       - discovery-server
 
   user-service:
-    build: ./user-service
+    build: ../user-service
     ports:
       - "8085:8085"
     depends_on:
@@ -117,7 +117,7 @@ services:
       - discovery-server
 
   notification-service:
-    build: ./notification-service
+    build: ../notification-service
     ports:
       - "8086:8086"
     depends_on:

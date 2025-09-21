@@ -4,7 +4,7 @@
 echo "🛑 Stopping docker-compose stack..."
 docker-compose down
 
-# Optional: uncomment next line to remove volumes as well
-# docker-compose down -v
+echo "🧹 Removing unused Docker resources..."
+docker system prune -f
 
-echo "✅ All services stopped."
+echo "✅ All services stopped and cleaned up."
